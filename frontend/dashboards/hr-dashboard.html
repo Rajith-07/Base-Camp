@@ -886,7 +886,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
    CONFIG — set your API Gateway URL here
 ═══════════════════════════════════════════ */
 const CONFIG = {
-  API_BASE: 'https://grhj2ndewj.execute-api.ap-south-1.amazonaws.com/prod',
+  API_BASE: process.env.PUBLIC_FORM_API_BASE,
 };
 
 /* ═══════════════════════════════════════════

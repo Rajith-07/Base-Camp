@@ -886,9 +886,9 @@ body::before {
    CONFIG
 ═══════════════════════════════════════════════════════ */
 const CONFIG = {
-  COGNITO_USER_POOL_ID : 'ap-south-1_bgSsPnuls',
-  COGNITO_CLIENT_ID    : '4m6offqipu920acued5j19pj38',
-  API_BASE             : 'https://sw29d0wzj0.execute-api.ap-south-1.amazonaws.com/prod',
+  COGNITO_USER_POOL_ID : process.env.AWS_COGNITO_USER_POOL_ID,
+  COGNITO_CLIENT_ID    : process.env.AWS_COGNITO_CLIENT_ID,
+  API_BASE             : process.env.ONBOARDING_API_BASE,
 };
 
 /* ═══════════════════════════════════════════════════════
