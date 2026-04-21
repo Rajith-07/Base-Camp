@@ -1,0 +1,450 @@
+{
+  "Comment": "Employee Onboarding - Minimal",
+  "StartAt": "SetStageDocsUpload",
+  "States": {
+    "SetStageDocsUpload": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-set-stage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage": "DOCS_UPLOAD"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "NotifyDocsUpload"
+    },
+    "NotifyDocsUpload": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-notify-employee",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "email.$": "$.email",
+        "name.$": "$.name",
+        "type": "DOCS_UPLOAD_REQUEST"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WaitForDocsUpload"
+    },
+    "WaitForDocsUpload": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-save-task-token",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "task_token.$": "$$.Task.Token",
+          "stage": "DOCS_UPLOAD",
+          "token_type": "EMPLOYEE_DOC_UPLOAD"
+        }
+      },
+      "ResultPath": null,
+      "HeartbeatSeconds": 2592000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.HeartbeatTimeout"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WaitForHRVerification"
+    },
+    "WaitForHRVerification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-save-task-token",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "task_token.$": "$$.Task.Token",
+          "stage": "DOCS_UPLOAD",
+          "token_type": "HR_DOCS_VERIFY"
+        }
+      },
+      "ResultPath": null,
+      "HeartbeatSeconds": 2592000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.HeartbeatTimeout"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "SetStageITProvisioning"
+    },
+    "SetStageITProvisioning": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-set-stage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage": "IT_PROVISIONING"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "NotifyITProvisioning"
+    },
+    "NotifyITProvisioning": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-notify-employee",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "email.$": "$.email",
+        "name.$": "$.name",
+        "type": "IT_PROVISIONING_REQUEST"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WaitForITProvisioning"
+    },
+    "WaitForITProvisioning": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-save-task-token",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "task_token.$": "$$.Task.Token",
+          "stage": "IT_PROVISIONING",
+          "token_type": "EMPLOYEE_IT_PROVISIONING"
+        }
+      },
+      "ResultPath": null,
+      "HeartbeatSeconds": 2592000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.HeartbeatTimeout"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "SetStagePolicySignoff"
+    },
+    "SetStagePolicySignoff": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-set-stage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage": "POLICY_SIGNOFF"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "NotifyPolicySign"
+    },
+    "NotifyPolicySign": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-notify-employee",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "email.$": "$.email",
+        "name.$": "$.name",
+        "type": "POLICY_SIGNOFF_REQUEST"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WaitForPolicySignoff"
+    },
+    "WaitForPolicySignoff": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-save-task-token",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "task_token.$": "$$.Task.Token",
+          "stage": "POLICY_SIGNOFF",
+          "token_type": "EMPLOYEE_POLICY_SIGN"
+        }
+      },
+      "ResultPath": null,
+      "HeartbeatSeconds": 2592000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.HeartbeatTimeout"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "SetStageManagerIntro"
+    },
+    "SetStageManagerIntro": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-set-stage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage": "MANAGER_INTRO"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "NotifyManagerIntro"
+    },
+    "NotifyManagerIntro": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-notify-employee",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "email.$": "$.email",
+        "name.$": "$.name",
+        "type": "MANAGER_INTRO_REQUEST"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WaitForManagerIntro"
+    },
+    "WaitForManagerIntro": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-save-task-token",
+        "Payload": {
+          "employee_id.$": "$.employee_id",
+          "task_token.$": "$$.Task.Token",
+          "stage": "MANAGER_INTRO",
+          "token_type": "MANAGER_INTRO_CONFIRM"
+        }
+      },
+      "ResultPath": null,
+      "HeartbeatSeconds": 2592000,
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.HeartbeatTimeout"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "SetStageCompleted"
+    },
+    "SetStageCompleted": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:ap-south-1:631865398307:function:onboarding-set-stage",
+      "Parameters": {
+        "employee_id.$": "$.employee_id",
+        "stage": "COMPLETED"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "OnboardingComplete"
+    },
+    "HandleFailure": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:ap-south-1:631865398307:onboarding-updates",
+        "Message.$": "States.Format('{\"employee_id\":\"{}\",\"stage\":\"WORKFLOW_ERROR\"}', $.employee_id)",
+        "MessageAttributes": {
+          "stage": {
+            "DataType": "String",
+            "StringValue": "WORKFLOW_ERROR"
+          }
+        }
+      },
+      "ResultPath": null,
+      "Next": "OnboardingFailed"
+    },
+    "OnboardingComplete": {
+      "Type": "Succeed"
+    },
+    "OnboardingFailed": {
+      "Type": "Fail",
+      "Error": "OnboardingFailed",
+      "Cause": "Workflow failed or timed out."
+    }
+  }
+}

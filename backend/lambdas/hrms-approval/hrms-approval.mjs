@@ -1,4 +1,3 @@
-
 import { DynamoDBClient, UpdateItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { CognitoIdentityProviderClient, AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { SESClient, SendTemplatedEmailCommand } from "@aws-sdk/client-ses";
