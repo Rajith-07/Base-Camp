@@ -5,16 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Onboarding Portal</title>
 
-<script>
-// Allow CDN and font endpoints to vary per environment.
-const COGNITO_IDENTITY_JS_CDN_URL = process.env.COGNITO_IDENTITY_JS_CDN_URL || 'https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6/dist/amazon-cognito-identity.min.js';
-const GOOGLE_FONTS_PRECONNECT_URL = process.env.GOOGLE_FONTS_PRECONNECT_URL || 'https://fonts.googleapis.com';
-const GOOGLE_FONTS_STYLESHEET_URL = process.env.GOOGLE_FONTS_STYLESHEET_URL || 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap';
+<script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6/dist/amazon-cognito-identity.min.js"></script>
 
-document.write('<script src="' + COGNITO_IDENTITY_JS_CDN_URL + '"><\\/script>');
-document.write('<link rel="preconnect" href="' + GOOGLE_FONTS_PRECONNECT_URL + '" />');
-document.write('<link href="' + GOOGLE_FONTS_STYLESHEET_URL + '" rel="stylesheet" />');
-</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
 <style>
 /* ─── TOKENS ──────────────────────────────────────────── */
@@ -608,7 +602,7 @@ body::before {
     <button class="auth-btn" id="login-btn" onclick="handleLogin()">Sign In →</button>
     <div class="auth-error" id="login-error"></div>
     <div class="auth-footer">
-      Credentials emailed by HR. No access? Contact <a href="mailto:hr@company.com">HR</a>
+      Credentials emailed by HR. No access? Contact <a href="mailto:rajith.offl@gmail.com">rajith.offl@gmail.com</a>
     </div>
   </div>
 </div>
@@ -1119,9 +1113,9 @@ body::before {
    CONFIG
 ═══════════════════════════════════════════════════════ */
 const CONFIG = {
-  COGNITO_USER_POOL_ID : process.env.AWS_COGNITO_USER_POOL_ID ,
-  COGNITO_CLIENT_ID    : process.env.AWS_COGNITO_CLIENT_ID ,
-  API_BASE             : process.env.ONBOARDING_API_BASE ,
+  COGNITO_USER_POOL_ID : "ap-south-1_bgSsPnuls",
+  COGNITO_CLIENT_ID    : "4m6offqipu920acued5j19pj38",
+  API_BASE             : "https://sw29d0wzj0.execute-api.ap-south-1.amazonaws.com/prod",
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -1726,9 +1720,9 @@ function showToast(msg, icon='✅') {
 /* ═══════════════════════════════════════════════════════
    FILE UPLOAD
 ═══════════════════════════════════════════════════════ */
-const ALLOWED_TYPES = process.env.ALLOWED_TYPES.split(',');
-const MAX_SIZE_MB = Number(process.env.MAX_SIZE_MB);
-const UPLOAD_CONCURRENCY = Number(process.env.UPLOAD_CONCURRENCY);
+const ALLOWED_TYPES      = ['application/pdf','image/jpeg','image/png','image/webp'];
+const MAX_SIZE_MB        = 5;
+const UPLOAD_CONCURRENCY = 3;
 const FS = { READY:'READY', GETTING_URL:'GETTING_URL', UPLOADING:'UPLOADING', DONE:'DONE', FAILED:'FAILED' };
 const STATUS_UI = { READY:{label:'Ready',cls:''}, GETTING_URL:{label:'Getting URL…',cls:'uploading'}, UPLOADING:{label:'Uploading…',cls:'uploading'}, DONE:{label:'✓ Done',cls:'done'}, FAILED:{label:'Failed',cls:'error'} };
 
@@ -1858,6 +1852,7 @@ async function submitDocs() {
     btn.innerHTML = '<span>⏳</span> Confirming…';
     await confirmUpload(toUpload);
     document.getElementById('docs-success').style.display = 'flex';
+    document.getElementById('docs-submit-btn').style.display = 'none';
     await loadDocuments(); showToast('Documents submitted successfully!');
   } catch (err) {
     console.error('SUBMIT DOCS ERROR:', err);
@@ -1952,10 +1947,10 @@ function syncSubmitButtonVisibility() {
    POLICIES
 ═══════════════════════════════════════════════════════ */
 const POLICIES = [
-  { id:'code',  icon:'📘', name:'Code of Conduct',           desc:'2 pages · Updated Jan 2025',        link: process.env.CODE_OF_CONDUCT_URL },
-  { id:'data',  icon:'🔐', name:'Data Privacy & Security',   desc:'3 pages · GDPR & IT-ACT compliant', link: process.env.DATA_PRIVACY_SECURITY_URL },
-  { id:'leave', icon:'🏖️', name:'Leave & Attendance Policy', desc:'4 pages · Includes WFH guidelines', link: process.env.LEAVE_ATTENDANCE_POLICY_URL },
-  { id:'anti',  icon:'🤝', name:'Anti-Harassment Policy',    desc:'2 pages · POSH compliant',          link: process.env.ANTI_HARASSMENT_POLICY_URL },
+  { id:'code',  icon:'📘', name:'Code of Conduct',           desc:'2 pages · Updated Jan 2025',        link:"https://d1i7s9im1domv9.cloudfront.net/code_of_conduct.html" },
+  { id:'data',  icon:'🔐', name:'Data Privacy & Security',   desc:'3 pages · GDPR & IT-ACT compliant', link:"https://d1i7s9im1domv9.cloudfront.net/data_privacy_security.html" },
+  { id:'leave', icon:'🏖️', name:'Leave & Attendance Policy', desc:'4 pages · Includes WFH guidelines', link:"https://d1i7s9im1domv9.cloudfront.net/leave_attendance_policy.html" },
+  { id:'anti',  icon:'🤝', name:'Anti-Harassment Policy',    desc:'2 pages · POSH compliant',          link:"https://d1i7s9im1domv9.cloudfront.net/anti_harassment_policy.html" },
 ];
 
 function buildPolicies() {
@@ -2049,6 +2044,7 @@ async function submitMeeting() {
   try {
     await apiPost('/manager/intro-confirm', payload);
     document.getElementById('meeting-success').style.display='flex';
+    document.getElementById('meeting-submit-btn').style.display = 'none';
     await callResumeOnboarding({
       employee_id: state.employeeId,
       token_type : 'MANAGER_INTRO_CONFIRM',
