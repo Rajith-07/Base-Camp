@@ -1,14 +1,24 @@
-<!-- 
- No doc view dash 
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>HR Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<script>
+const GOOGLE_FONTS_PRECONNECT_URL = process.env.GOOGLE_FONTS_PRECONNECT_URL || 'https://fonts.googleapis.com';
+const GOOGLE_FONTS_STYLESHEET_URL = process.env.GOOGLE_FONTS_STYLESHEET_URL || 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap';
+
+const APP_BRAND_NAME = process.env.APP_BRAND_NAME || 'hrms';
+const HR_DISPLAY_NAME = process.env.HR_DISPLAY_NAME || 'ABC';
+const HR_DISPLAY_ROLE = process.env.HR_DISPLAY_ROLE || 'HR';
+const HR_BADGE_LABEL = process.env.HR_BADGE_LABEL || 'HR Admin';
+const HR_DOCS_VERIFIED_BY = process.env.HR_DOCS_VERIFIED_BY || 'HR';
+
+document.write('<link rel="preconnect" href="' + GOOGLE_FONTS_PRECONNECT_URL + '" />');
+document.write('<link href="' + GOOGLE_FONTS_STYLESHEET_URL + '" rel="stylesheet" />');
+</script>
+
 
 <style>
 /* ─── TOKENS ─────────────────────────────────── */
@@ -243,7 +253,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
   white-space: nowrap;
 }
 .reload-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
-.reload-btn.spinning #reload-icon { animation: spin 0.7s linear infinite; }
+.reload-btn.spinning .reload-icon-svg { animation: spin 0.7s linear infinite; }
 
 /* ─── LOADING SKELETON ───────────────────────── */
 #loading-state {
@@ -369,34 +379,6 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .ov-footer-status.approved { background: var(--accent-lt); color: var(--accent); }
 .ov-footer-status.rejected { background: var(--red-lt); color: var(--red); }
 
-/* ─── BLANK STATE PAGE ───────────────────────── */
-.blank-page {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 55vh; text-align: center;
-}
-.blank-icon-wrap {
-  width: 80px; height: 80px; border-radius: 20px;
-  background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px; margin-bottom: 20px;
-}
-.blank-title { font-family: 'Instrument Serif', serif; font-size: 24px; margin-bottom: 8px; }
-.blank-sub { font-size: 14px; color: var(--muted); max-width: 320px; line-height: 1.6; }
-
-/* ─── TOAST ──────────────────────────────────── */
-#toast {
-  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-  background: var(--ink); color: #fff;
-  border-radius: 10px; padding: 12px 18px;
-  font-size: 13px; font-weight: 500;
-  display: flex; align-items: center; gap: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  transform: translateY(70px); opacity: 0;
-  transition: all 0.35s var(--ease);
-  max-width: 320px;
-}
-#toast.show { transform: translateY(0); opacity: 1; }
-
 /* ─── TRACKING TABLE ─────────────────────── */
 .track-table-wrap {
   background: var(--surface);
@@ -420,7 +402,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .track-table-wrap tbody tr:hover { background: #faf9f7; }
 .track-table-wrap tbody td { padding: 13px 16px; font-size: 13px; vertical-align: middle; }
 
-/* Stage pipeline in table */
+/* ─── STAGE PIPELINE (table) ─────────────── */
 .stage-pipeline {
   display: flex; align-items: center; gap: 0;
 }
@@ -437,6 +419,9 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .stage-dot.done   { background: var(--accent); color: #fff; }
 .stage-dot.active { background: var(--amber); color: #fff; box-shadow: 0 0 0 3px var(--amber-lt); }
 .stage-dot.todo   { background: var(--surface2); color: var(--muted); border: 2px solid var(--border2); }
+/* complete stage: green if done, grey if not reached — never amber */
+.stage-dot.complete-done   { background: var(--accent); color: #fff; }
+.stage-dot.complete-todo   { background: var(--surface2); color: var(--muted); border: 2px solid var(--border2); }
 .stage-label {
   font-size: 10px; color: var(--muted); white-space: nowrap;
   font-weight: 500; letter-spacing: 0.02em;
@@ -455,7 +440,17 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .tprog-fill { height: 100%; border-radius: 99px; transition: width 0.5s var(--ease); }
 .tprog-pct  { font-size: 11px; font-weight: 700; white-space: nowrap; }
 
-/* Detail drawer — centered modal */
+/* ─── TRACKING LOADING ───────────────────── */
+#track-loading-state {
+  text-align: center; padding: 64px 24px;
+  display: none;
+}
+#track-error-state {
+  display: none;
+  text-align: center; padding: 64px 24px;
+}
+
+/* ─── DETAIL DRAWER ──────────────────────── */
 #detail-drawer-backdrop {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(20,18,16,0.45);
@@ -502,7 +497,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 }
 .drawer-close:hover { background: var(--border); color: var(--ink); }
 
-/* Progress tracker inside drawer (like shipping image) */
+/* ─── TRACKER PIPELINE (drawer) ──────────── */
 .drawer-tracker {
   padding: 20px 24px 16px;
   border-bottom: 1px solid var(--border);
@@ -530,6 +525,9 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .tracker-dot.done   { background: var(--accent); color: #fff; border-color: var(--accent); }
 .tracker-dot.active { background: var(--amber); color: #fff; border-color: var(--amber); box-shadow: 0 0 0 4px var(--amber-lt); }
 .tracker-dot.todo   { background: var(--surface); border-color: var(--border2); color: var(--muted); }
+/* complete stage special: never amber */
+.tracker-dot.complete-done { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tracker-dot.complete-todo { background: var(--surface); border-color: var(--border2); color: var(--muted); }
 .tracker-conn {
   flex: 1; height: 2px; margin-top: 15px;
   position: relative; z-index: 1;
@@ -544,7 +542,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .tracker-step-label.done   { color: var(--accent); }
 .tracker-step-label.active { color: var(--amber); }
 
-/* Action buttons section */
+/* ─── DOCUMENTS SECTION ──────────────────── */
 .drawer-actions {
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
@@ -553,46 +551,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
   color: var(--muted); margin-bottom: 12px;
 }
-.action-btn-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-}
-.action-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-radius: 9px;
-  font-family: inherit; font-size: 12.5px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s var(--ease);
-  border: 1px solid; text-align: left;
-}
-.action-btn .aicon { font-size: 15px; flex-shrink: 0; }
-.action-btn .alabel { flex: 1; }
-.action-btn.ab-green  { background: var(--accent-lt); color: var(--accent); border-color: var(--accent-md); }
-.action-btn.ab-green:hover  { background: var(--accent); color: #fff; }
-.action-btn.ab-amber  { background: var(--amber-lt); color: var(--amber); border-color: var(--amber-md); }
-.action-btn.ab-amber:hover  { background: var(--amber); color: #fff; }
-.action-btn.ab-ink    { background: var(--surface2); color: var(--ink2); border-color: var(--border2); }
-.action-btn.ab-ink:hover    { background: var(--ink); color: #fff; border-color: var(--ink); }
-.action-btn.ab-red    { background: var(--red-lt); color: var(--red); border-color: var(--red-md); }
-.action-btn.ab-red:hover    { background: var(--red); color: #fff; }
-.action-btn.done-btn {
-  opacity: 0.55; pointer-events: none;
-  text-decoration: line-through;
-}
-.action-btn .checkmark { margin-left: auto; font-size: 12px; }
 
-/* Details info in drawer */
-.drawer-info { padding: 16px 24px 24px; flex: 1; }
-.di-section { margin-bottom: 18px; }
-.di-section-label {
-  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--accent); border-bottom: 1px solid var(--border);
-  padding-bottom: 7px; margin-bottom: 12px;
-}
-.di-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.di-field-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
-.di-field-val { font-size: 13px; color: var(--ink); font-weight: 500; word-break: break-word; }
-.di-field-val.email { color: var(--accent); font-weight: 400; }
-
-/* Documents table */
 .docs-table {
   width: 100%; border-collapse: collapse;
   border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
@@ -609,24 +568,76 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 .docs-table tbody td { padding: 11px 14px; vertical-align: middle; }
 .doc-name { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 7px; }
 .doc-name-icon { font-size: 15px; }
-.doc-link {
-  color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 600;
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px; border-radius: 6px;
-  border: 1px solid var(--accent-md); background: var(--accent-lt);
-  transition: all 0.15s;
+
+/* Doc tick — uploaded */
+.doc-tick {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent-lt); border: 1.5px solid var(--accent-md);
+  color: var(--accent); font-size: 14px; font-weight: 700;
 }
-.doc-link:hover { background: var(--accent); color: #fff; }
+/* Doc cross — not yet uploaded */
+.doc-cross {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--red-lt); border: 1.5px solid var(--red-md);
+  color: var(--red); font-size: 13px; font-weight: 700;
+}
+
+/* Verify button */
 .verify-docs-btn {
   width: 100%; margin-top: 14px;
   padding: 12px; border-radius: 10px;
-  background: var(--accent); color: #fff;
   font-family: inherit; font-size: 13.5px; font-weight: 600;
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: all 0.15s var(--ease);
 }
-.verify-docs-btn:hover { background: #155748; transform: translateY(-1px); }
+.verify-docs-btn.can-verify {
+  background: var(--accent); color: #fff;
+}
+.verify-docs-btn.can-verify:hover { background: #155748; transform: translateY(-1px); }
+.verify-docs-btn.already-verified {
+  background: var(--accent-lt); color: var(--accent);
+  border: 1.5px solid var(--accent-md);
+  cursor: default; pointer-events: none;
+}
+.verify-docs-btn.disabled-verify {
+  background: var(--surface2); color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: not-allowed; pointer-events: none; opacity: 0.72;
+}
+/* "Documents Not Uploaded Yet" — amber tint to signal pending employee action */
+.verify-docs-btn.disabled-verify svg {
+  opacity: 0.7;
+}
+
+/* Details info in drawer */
+.drawer-info { padding: 16px 24px 24px; flex: 1; }
+.di-section { margin-bottom: 18px; }
+.di-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent); border-bottom: 1px solid var(--border);
+  padding-bottom: 7px; margin-bottom: 12px;
+}
+.di-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.di-field-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.di-field-val { font-size: 13px; color: var(--ink); font-weight: 500; word-break: break-word; }
+.di-field-val.email { color: var(--accent); font-weight: 400; }
+
+/* ─── TOAST ──────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--ink); color: #fff;
+  border-radius: 10px; padding: 12px 18px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transform: translateY(70px); opacity: 0;
+  transition: all 0.35s var(--ease);
+  max-width: 320px;
+}
+#toast.show { transform: translateY(0); opacity: 1; }
 </style>
 </head>
 <body>
@@ -635,13 +646,13 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 <div id="topbar">
   <div class="topbar-left">
     <div class="topbar-mark">H</div>
-    <span class="topbar-title">hrms</span>
-    <span class="topbar-badge">HR Admin</span>
+    <span class="topbar-title" id="topbar-brand">hrms</span>
+    <span class="topbar-badge" id="topbar-badge">HR Admin</span>
   </div>
   <div class="topbar-right">
     <div class="hr-chip">
-      <div class="hr-avatar">R</div>
-      Rajith · HR
+      <div class="hr-avatar" id="hr-avatar">R</div>
+      <span id="hr-chip-name">Rajith</span> · <span id="hr-chip-role">HR</span>
     </div>
   </div>
 </div>
@@ -689,7 +700,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
           <option value="rejected">Rejected</option>
         </select>
         <button class="reload-btn" onclick="loadSubmissions()" title="Reload submissions">
-          <svg id="reload-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <svg class="reload-icon-svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           Reload
         </button>
       </div>
@@ -777,6 +788,11 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
           <option value="in_progress">In Progress</option>
           <option value="complete">Complete</option>
         </select>
+        <!-- RELOAD BUTTON for Tracking tab -->
+        <button class="reload-btn" id="track-reload-btn" onclick="loadTracking()" title="Reload tracking data">
+          <svg class="reload-icon-svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Reload
+        </button>
       </div>
     </div>
 
@@ -800,6 +816,20 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
       </div>
     </div>
 
+    <!-- Loading state for tracking -->
+    <div id="track-loading-state" style="display:none;">
+      <div class="spinner-ring"></div>
+      <div class="loading-text">Loading onboarding progress…</div>
+    </div>
+
+    <!-- Error state for tracking -->
+    <div id="track-error-state" style="display:none;">
+      <div style="font-size:32px;color:var(--red);margin-bottom:12px">!</div>
+      <div class="error-title">Failed to load tracking data</div>
+      <div class="error-sub" id="track-error-msg">Could not reach the server.</div>
+      <button class="retry-btn" onclick="loadTracking()">Retry</button>
+    </div>
+
     <!-- Table view -->
     <div class="track-table-wrap" id="track-table-wrap">
       <table>
@@ -808,7 +838,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
             <th>#</th>
             <th>Employee</th>
             <th>Department</th>
-            <th>Stage</th>
+            <th>Onboarding Stage</th>
             <th>Progress</th>
             <th>Status</th>
             <th>Details</th>
@@ -831,7 +861,6 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
   </div>
 
 </div>
-
 </div><!-- /shell -->
 
 <!-- DETAIL DRAWER -->
@@ -846,7 +875,7 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
       <button class="drawer-close" onclick="closeDrawerDirect()">✕</button>
     </div>
 
-    <!-- Stage tracker (like shipping image) -->
+    <!-- Stage tracker -->
     <div class="drawer-tracker">
       <div class="drawer-tracker-label">Onboarding Stages</div>
       <div class="tracker-line" id="tracker-line"></div>
@@ -882,31 +911,108 @@ td.td-dept  { color: var(--ink2); font-size: 13px; }
 <div id="toast"><span id="toast-icon"></span><span id="toast-msg" style="flex:1"></span></div>
 
 <script>
+
 /* ═══════════════════════════════════════════
-   CONFIG — set your API Gateway URL here
+   CONFIG
 ═══════════════════════════════════════════ */
 const CONFIG = {
-  API_BASE: process.env.PUBLIC_FORM_API_BASE,
+  FORMS_API_BASE: process.env.PUBLIC_FORM_API_BASE,
+  ONBOARDING_API_BASE: process.env.ONBOARDING_API_BASE
 };
 
 /* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
-let SUBMISSIONS = [];
+let SUBMISSIONS = [];     // All employees from /employees
+let PROGRESS    = {};     // { employee_id: progressBody } from /onboarding/progress
 let activeId    = null;
+let activeDrawerId = null;
+let trackingLoaded = false;
+
+/* ═══════════════════════════════════════════
+   ONBOARDING STAGES — actual API flow:
+     DOCS_UPLOAD      (task_types: DOCS_UPLOAD_REQUEST → EMPLOYEE_DOCS_UPLOAD → HR_DOCS_VERIFY)
+     POLICY_SIGNOFF   (task_types: EMPLOYEE_POLICY_SIGN)
+     MANAGER_INTRO    (task_types: MANAGER_INTRO_CONFIRM)
+   "Complete" = MANAGER_INTRO done.
+   Display names map to these 3 stages + a Complete cap.
+═══════════════════════════════════════════ */
+const STAGES = ['Docs', 'IT Setup', 'Policy Signoff', 'Manager Intro', 'Complete'];
+
+// Stage ordering: higher number = further along
+const STAGE_ORDER = {
+  'DOCS_UPLOAD':      0,
+  'IT_PROVISIONING':  1,
+  'POLICY_SIGNOFF':   2,
+  'MANAGER_INTRO':    3,
+  'COMPLETE':         4,
+};
+
+// Sub-task ordering within each stage (lower = earlier in stage)
+const TASK_ORDER = {
+  // DOCS_UPLOAD sub-tasks
+  'DOCS_UPLOAD_REQUEST':    0,
+  'EMPLOYEE_DOC_UPLOAD':    1,
+  'HR_DOCS_VERIFY':         2,
+  // IT_PROVISIONING sub-tasks
+  'EMPLOYEE_IT_PROVISIONING': 0,
+  // POLICY_SIGNOFF sub-tasks
+  'EMPLOYEE_POLICY_SIGN':   0,
+  // MANAGER_INTRO sub-tasks
+  'MANAGER_INTRO_CONFIRM':  0,
+};
+
+/* Map API onboarding_stage → display label */
+function normalizeStage(apiStage) {
+  if (!apiStage) return 'Docs'; // default starting stage
+  const s = apiStage.toUpperCase().replace(/-/g, '_').trim();
+  if (s === 'NOT_STARTED')     return 'Docs';
+  if (s === 'DOCS_UPLOAD')     return 'Docs';
+  if (s === 'IT_PROVISIONING') return 'IT Setup';
+  if (s === 'POLICY_SIGNOFF')  return 'Policy Signoff';
+  if (s === 'MANAGER_INTRO')   return 'Manager Intro';
+  if (s === 'COMPLETE' || s === 'COMPLETED' || s === 'DONE') return 'Complete';
+  return 'Docs';
+}
+
+/* Stage index in STAGES array (0-based). Returns 0 minimum (everyone starts at Docs). */
+function stageIndex(stageName) {
+  const idx = STAGES.indexOf(stageName);
+  return idx >= 0 ? idx : 0;
+}
+
+/* Compute overall progress (0–100) from stage + task_type.
+   Each stage contributes an equal share; sub-tasks fill within the stage. */
+function computeProgress(onboarding_stage, task_type) {
+  const raw  = (onboarding_stage || '').toUpperCase().replace(/-/g, '_').trim();
+  const task = (task_type || '').toUpperCase().replace(/-/g, '_').trim();
+
+  if (raw === 'COMPLETE' || raw === 'COMPLETED' || raw === 'DONE') return 100;
+
+  // Each stage = 25%. Sub-tasks define progress *within* that 25% band.
+  // Values are absolute % checkpoints.
+  const checkpoints = {
+    // DOCS_UPLOAD: 0–25%
+    'DOCS_UPLOAD':     { 'DOCS_UPLOAD_REQUEST': 0,  'EMPLOYEE_DOC_UPLOAD': 10, 'HR_DOCS_VERIFY': 20 },
+    // IT_PROVISIONING: 25–50%
+    'IT_PROVISIONING': { 'EMPLOYEE_IT_PROVISIONING': 25 },
+    // POLICY_SIGNOFF: 50–75%
+    'POLICY_SIGNOFF':  { 'EMPLOYEE_POLICY_SIGN': 50 },
+    // MANAGER_INTRO: 75–100%
+    'MANAGER_INTRO':   { 'MANAGER_INTRO_CONFIRM': 75 },
+  };
+
+  const stageMap = checkpoints[raw];
+  if (!stageMap) return 0;
+
+  return stageMap[task] ?? Object.values(stageMap)[0];
+}
 
 /* ═══════════════════════════════════════════
    STATUS MAPPING
-   Backend uses "pending_approval", "approved", "rejected"
-   Frontend uses "pending", "approved", "rejected"
 ═══════════════════════════════════════════ */
 function mapStatus(status) {
   if (status === 'pending_approval') return 'pending';
-  return status; // "approved" and "rejected" pass through unchanged
-}
-
-function reverseMapStatus(status) {
-  if (status === 'pending') return 'pending_approval';
   return status;
 }
 
@@ -914,57 +1020,46 @@ function reverseMapStatus(status) {
    LOAD SUBMISSIONS  — GET /employees
 ═══════════════════════════════════════════ */
 async function loadSubmissions() {
-  // Show loading, hide table and error
   document.getElementById('loading-state').style.display = 'block';
   document.getElementById('table-wrap').style.display    = 'none';
   document.getElementById('error-state').style.display   = 'none';
 
-  const reloadBtn = document.querySelector('.reload-btn');
+  const reloadBtn = document.querySelector('#panel-submissions .reload-btn');
   if (reloadBtn) reloadBtn.classList.add('spinning');
 
   try {
-    const res = await fetch(CONFIG.API_BASE + '/employees');
-
-    if (!res.ok) {
-      throw new Error(`Server returned ${res.status}`);
-    }
+    const res = await fetch(CONFIG.FORMS_API_BASE + '/employees');
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
 
     const data = await res.json();
     const list = Array.isArray(data) ? data : (data.employees || data.items || []);
+    list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    // Map backend field names → frontend field names
     SUBMISSIONS = list.map(emp => ({
       id:               emp.employee_id,
       status:           mapStatus(emp.status),
-
       firstName:        emp.first_name,
       lastName:         emp.last_name,
       email:            emp.email,
       phone:            (emp.phone_country_code || '') + ' ' + (emp.phone || ''),
-
       department:       emp.department,
       position:         emp.role,
-
       startDate:        emp.joining_date,
       officeLocation:   emp.work_location,
       employmentType:   emp.employment_type,
       reportingManager: emp.manager_id,
-
-      submittedAt:      emp.submitted_at,
-
+      submittedAt:      emp.created_at,
       emergencyContact: emp.emergency_contact_name
                           ? emp.emergency_contact_name + ' — ' + (emp.emergency_contact_phone || '')
                           : '—',
     }));
 
-    // Hide loading, show table
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('table-wrap').style.display    = 'block';
     if (reloadBtn) reloadBtn.classList.remove('spinning');
 
     updateStats();
     renderTable();
-    updateTrackingStats(SUBMISSIONS.filter(s => s.status === 'approved'));
 
   } catch (err) {
     console.error('Failed to load employees:', err);
@@ -976,7 +1071,54 @@ async function loadSubmissions() {
 }
 
 /* ═══════════════════════════════════════════
-   STATS
+   LOAD TRACKING — GET /onboarding/progress?employee_id=*
+   Single call returns { count, records: [...] }
+═══════════════════════════════════════════ */
+async function loadTracking() {
+  // Show loading
+  document.getElementById('track-loading-state').style.display = 'block';
+  document.getElementById('track-table-wrap').style.display    = 'none';
+  document.getElementById('track-error-state').style.display   = 'none';
+
+  const reloadBtn = document.getElementById('track-reload-btn');
+  if (reloadBtn) reloadBtn.classList.add('spinning');
+
+  try {
+    const res = await fetch(`${CONFIG.ONBOARDING_API_BASE}/onboarding/progress?employee_id=*`);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+    const data = await res.json();
+    // Response shape: { count: N, records: [ { employee_id, onboarding_stage, task_type, ... } ] }
+    const records = data.records || data.items || (Array.isArray(data) ? data : []);
+
+    // Reset and rebuild PROGRESS map keyed by employee_id
+    PROGRESS = {};
+    records.forEach(rec => {
+      if (rec.employee_id) {
+        PROGRESS[rec.employee_id] = rec;
+      }
+    });
+
+    trackingLoaded = true;
+    document.getElementById('track-loading-state').style.display = 'none';
+    document.getElementById('track-table-wrap').style.display    = 'block';
+    if (reloadBtn) reloadBtn.classList.remove('spinning');
+
+    const approved = SUBMISSIONS.filter(s => s.status === 'approved');
+    updateTrackingStats(approved);
+    renderTracking();
+
+  } catch (err) {
+    console.error('Failed to load tracking:', err);
+    document.getElementById('track-loading-state').style.display = 'none';
+    document.getElementById('track-error-state').style.display   = 'block';
+    document.getElementById('track-error-msg').textContent       = err.message || 'Could not reach the server.';
+    if (reloadBtn) reloadBtn.classList.remove('spinning');
+  }
+}
+
+/* ═══════════════════════════════════════════
+   STATS (Submissions tab)
 ═══════════════════════════════════════════ */
 function updateStats() {
   const total    = SUBMISSIONS.length;
@@ -992,7 +1134,7 @@ function updateStats() {
 }
 
 /* ═══════════════════════════════════════════
-   TABLE RENDER
+   TABLE RENDER (Submissions)
 ═══════════════════════════════════════════ */
 function renderTable() {
   const q      = document.getElementById('search-input').value.toLowerCase();
@@ -1009,31 +1151,22 @@ function renderTable() {
   const empty = document.getElementById('empty-state');
 
   if (filtered.length === 0) {
-    tbody.innerHTML    = '';
+    tbody.innerHTML = '';
     empty.style.display = 'block';
     return;
   }
   empty.style.display = 'none';
 
   tbody.innerHTML = filtered.map((s, i) => {
-    const isLoading = s.status === 'loading';
-    const isDone    = s.status === 'approved' || s.status === 'rejected';
+    const isLoading  = s.status === 'loading';
+    const isDone     = s.status === 'approved' || s.status === 'rejected';
     const isDisabled = isDone || isLoading;
 
     let pillCls, pillLabel;
-    if (isLoading) {
-      pillCls   = 'loading';
-      pillLabel = 'Saving…';
-    } else if (s.status === 'pending') {
-      pillCls   = 'pending';
-      pillLabel = 'Pending';
-    } else if (s.status === 'approved') {
-      pillCls   = 'approved';
-      pillLabel = 'Approved';
-    } else {
-      pillCls   = 'rejected';
-      pillLabel = 'Rejected';
-    }
+    if (isLoading)           { pillCls = 'loading';  pillLabel = 'Saving…';   }
+    else if (s.status === 'pending')  { pillCls = 'pending';  pillLabel = 'Pending';  }
+    else if (s.status === 'approved') { pillCls = 'approved'; pillLabel = 'Approved'; }
+    else                              { pillCls = 'rejected'; pillLabel = 'Rejected'; }
 
     return `
       <tr onclick="openOverlay('${s.id}')">
@@ -1056,7 +1189,7 @@ function renderTable() {
 }
 
 /* ═══════════════════════════════════════════
-   QUICK ACTION (table row buttons)
+   QUICK ACTION (table row)
 ═══════════════════════════════════════════ */
 async function quickAction(id, action) {
   const sub = SUBMISSIONS.find(s => s.id === id);
@@ -1074,48 +1207,32 @@ async function doAction(id, action) {
   if (!sub) return;
 
   const previousStatus = sub.status;
-
-  // Optimistic UI: show loading state immediately
   sub.status = 'loading';
   updateStats();
   renderTable();
-
-  // Disable overlay buttons if open
   document.querySelectorAll('.ov-approve-btn, .ov-reject-btn').forEach(b => b.disabled = true);
 
   try {
-    const res = await fetch(`${CONFIG.API_BASE}/employees/${id}`, {
+    const res = await fetch(`${CONFIG.FORMS_API_BASE}/employees/${id}`, {
       method:  'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ status: action }),  // backend expects "approved" or "rejected"
+      body:    JSON.stringify({ status: action }),
     });
-
-    if (!res.ok) {
-      throw new Error(`Server returned ${res.status}`);
-    }
-
-    // Commit the new status
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
     sub.status = action;
-
   } catch (err) {
     console.error('Update failed:', err);
-
-    // Rollback to previous status on failure
     sub.status = previousStatus;
     showToast('Error', 'Update failed — please try again');
   }
 
   updateStats();
   renderTable();
-
-  // Re-render overlay footer if it's open for this record
-  if (activeId === id) {
-    renderOverlayFooter(sub);
-  }
+  if (activeId === id) renderOverlayFooter(sub);
 }
 
 /* ═══════════════════════════════════════════
-   OVERLAY
+   OVERLAY (Submissions detail)
 ═══════════════════════════════════════════ */
 function openOverlay(id) {
   const s = SUBMISSIONS.find(x => x.id === id);
@@ -1132,7 +1249,6 @@ function openOverlay(id) {
       <div class="ov-field"><div class="ov-field-label">Phone</div><div class="ov-field-val">${s.phone || '—'}</div></div>
       <div class="ov-field"><div class="ov-field-label">Emergency Contact</div><div class="ov-field-val">${s.emergencyContact || '—'}</div></div>
     </div>
-
     <div class="ov-section-label">Role &amp; Employment</div>
     <div class="ov-grid">
       <div class="ov-field"><div class="ov-field-label">Department</div><div class="ov-field-val">${s.department}</div></div>
@@ -1142,7 +1258,6 @@ function openOverlay(id) {
       <div class="ov-field"><div class="ov-field-label">Work Location</div><div class="ov-field-val">${s.officeLocation || '—'}</div></div>
       <div class="ov-field"><div class="ov-field-label">Reporting Manager</div><div class="ov-field-val">${s.reportingManager || '—'}</div></div>
     </div>
-
     <div class="ov-section-label">Submission Info</div>
     <div class="ov-grid">
       <div class="ov-field"><div class="ov-field-label">Submitted At</div><div class="ov-field-val">${fmt(s.submittedAt)}</div></div>
@@ -1151,7 +1266,6 @@ function openOverlay(id) {
   `;
 
   renderOverlayFooter(s);
-
   const bd = document.getElementById('overlay-backdrop');
   bd.removeAttribute('style');
   requestAnimationFrame(() => bd.classList.add('show'));
@@ -1162,8 +1276,7 @@ function renderOverlayFooter(s) {
   if (s.status === 'pending') {
     footer.innerHTML = `
       <button class="ov-reject-btn"  onclick="overlayAction('rejected')">✕ &nbsp;Reject Application</button>
-      <button class="ov-approve-btn" onclick="overlayAction('approved')">✓ &nbsp;Approve &amp; Onboard</button>
-    `;
+      <button class="ov-approve-btn" onclick="overlayAction('approved')">✓ &nbsp;Approve &amp; Onboard</button>`;
   } else if (s.status === 'loading') {
     footer.innerHTML = `<div class="ov-footer-status approved" style="background:var(--surface2);color:var(--muted);width:100%">Saving…</div>`;
   } else {
@@ -1189,6 +1302,7 @@ function closeOverlayDirect() {
   bd.classList.remove('show');
   activeId = null;
 }
+
 /* ═══════════════════════════════════════════
    TABS
 ═══════════════════════════════════════════ */
@@ -1197,8 +1311,434 @@ function switchTab(id, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'tracking') renderTracking();
+
+  if (id === 'tracking') {
+    // Always load fresh when switching to tracking tab
+    loadTracking();
+  }
 }
+
+/* ═══════════════════════════════════════════
+   TRACKING STATS
+═══════════════════════════════════════════ */
+function updateTrackingStats(approved) {
+  const total = approved.length;
+  let complete = 0, inprog = 0, notstarted = 0;
+
+  approved.forEach(s => {
+    const prog      = PROGRESS[s.id];
+    const rawStage  = prog ? (prog.onboarding_stage || '') : '';
+    const taskType  = prog ? (prog.task_type || '') : '';
+    const stage     = normalizeStage(rawStage);
+    const pct       = computeProgress(rawStage, taskType);
+
+    if (stage === 'Complete' || pct === 100) complete++;
+    else if (pct === 0) notstarted++; // Docs + DOCS_UPLOAD_REQUEST = nothing done yet
+    else inprog++;
+  });
+
+  document.getElementById('track-stat-total').textContent      = total;
+  document.getElementById('track-stat-complete').textContent   = complete;
+  document.getElementById('track-stat-inprog').textContent     = inprog;
+  document.getElementById('track-stat-notstarted').textContent = notstarted;
+  document.getElementById('tab-count-tracking').textContent    = total;
+}
+
+/* ═══════════════════════════════════════════
+   TRACKING TABLE RENDER
+═══════════════════════════════════════════ */
+function renderTracking() {
+  const approved = SUBMISSIONS.filter(s => s.status === 'approved');
+
+  // Populate dept filter once
+  const deptSel = document.getElementById('track-dept-filter');
+  if (deptSel.options.length === 1) {
+    const depts = [...new Set(approved.map(s => s.department).filter(Boolean))].sort();
+    depts.forEach(d => {
+      const o = document.createElement('option'); o.value = d; o.textContent = d;
+      deptSel.appendChild(o);
+    });
+  }
+
+  const q        = (document.getElementById('track-search').value || '').toLowerCase();
+  const dept     = document.getElementById('track-dept-filter').value;
+  const progress = document.getElementById('track-progress-filter').value;
+
+  const filtered = approved.filter(s => {
+    const name   = ((s.firstName || '') + ' ' + (s.lastName || '')).toLowerCase();
+    const matchQ = !q || name.includes(q) || (s.email || '').toLowerCase().includes(q);
+    const matchD = !dept || s.department === dept;
+    if (!matchQ || !matchD) return false;
+
+    if (progress) {
+      const prog     = PROGRESS[s.id];
+      const rawStage = prog ? (prog.onboarding_stage || '') : '';
+      const taskType = prog ? (prog.task_type || '') : '';
+      const pct      = computeProgress(rawStage, taskType);
+      if (progress === 'complete'    && pct !== 100)               return false;
+      if (progress === 'not_started' && pct !== 0)                 return false;
+      if (progress === 'in_progress' && (pct === 0 || pct === 100)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('track-table-body');
+  const empty  = document.getElementById('track-empty');
+  const none   = document.getElementById('track-none');
+
+  if (approved.length === 0) {
+    tbody.innerHTML = '';
+    none.style.display  = 'block';
+    empty.style.display = 'none';
+    return;
+  }
+  none.style.display = 'none';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((s, i) => {
+    const prog     = PROGRESS[s.id] || {};
+    const rawStage = prog.onboarding_stage || '';
+    const taskType = prog.task_type || '';
+    const curStage = normalizeStage(rawStage);
+    const curIdx   = stageIndex(curStage); // index in STAGES array
+    const isComplete = curStage === 'Complete';
+
+    // Progress pct: uses sub-task aware computation
+    const pct = computeProgress(rawStage, taskType);
+
+    const initials = ((s.firstName || '?')[0] + (s.lastName || '?')[0]).toUpperCase();
+
+    // Pipeline: 4 nodes (Docs, Policy Signoff, Manager Intro, Complete)
+    const pipeHtml = STAGES.map((sg, idx) => {
+      const isThisComplete = sg === 'Complete';
+      let dotCls;
+      if (isComplete || pct === 100) {
+        dotCls = isThisComplete ? 'complete-done' : 'done';
+      } else if (idx < curIdx) {
+        dotCls = 'done';
+      } else if (idx === curIdx) {
+        dotCls = isThisComplete ? 'complete-done' : 'active';
+      } else {
+        dotCls = isThisComplete ? 'complete-todo' : 'todo';
+      }
+
+      const isDoneConn = (isComplete || pct === 100) ? true : (idx < curIdx);
+      const conn = idx < STAGES.length - 1
+        ? `<div class="stage-connector ${isDoneConn ? 'done' : 'todo'}"></div>` : '';
+      const dotContent = (dotCls === 'done' || dotCls === 'complete-done') ? '✓' : (idx + 1);
+
+      return `
+        <div class="stage-node">
+          <div class="stage-dot ${dotCls}">${dotContent}</div>
+          <div class="stage-label">${sg}</div>
+        </div>${conn}`;
+    }).join('');
+
+    const barColor    = pct === 100 ? 'var(--accent)' : pct === 0 ? 'var(--red)' : 'var(--amber)';
+    const statusLabel = pct === 100 ? 'Complete' : pct === 0 ? 'Not Started' : 'In Progress';
+    const statusCls   = pct === 100 ? 'approved' : pct === 0 ? 'rejected' : 'pending';
+
+    // Stage pill — show the raw stage label for clarity, amber unless complete
+    const stagePillColor = isComplete ? 'var(--accent)' : 'var(--amber)';
+    const stagePillBg    = isComplete ? 'var(--accent-lt)' : 'var(--amber-lt)';
+    const stagePillBorder= isComplete ? 'var(--accent-md)' : 'var(--amber-md)';
+    const stageDisplay   = curStage;
+
+    return `
+      <tr onclick="openDrawer('${s.id}')">
+        <td style="color:var(--muted);font-size:12px;width:36px">${String(i+1).padStart(2,'0')}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:8px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
+            <div>
+              <div style="font-weight:600;font-size:13px">${s.firstName || ''} ${s.lastName || ''}</div>
+              <div style="font-size:11px;color:var(--muted)">${s.email}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:13px;color:var(--ink2)">${s.department || '—'}</td>
+        <td>
+          <span class="status-pill" style="background:${stagePillBg};color:${stagePillColor};border-color:${stagePillBorder}">
+            ${stageDisplay}
+          </span>
+        </td>
+        <td>
+          <div class="stage-pipeline">${pipeHtml}</div>
+        </td>
+        <td>
+          <div class="tprog-wrap">
+            <div class="tprog-bar"><div class="tprog-fill" style="width:${pct}%;background:${barColor}"></div></div>
+            <span class="tprog-pct" style="color:${barColor}">${pct}%</span>
+          </div>
+        </td>
+        <td onclick="event.stopPropagation()">
+          <button style="padding:6px 14px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all 0.15s"
+            onmouseover="this.style.background='var(--accent-lt)';this.style.color='var(--accent)'"
+            onmouseout="this.style.background='var(--surface2)';this.style.color='var(--ink2)'"
+            onclick="openDrawer('${s.id}')">
+            View →
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   DETAIL DRAWER
+═══════════════════════════════════════════ */
+function openDrawer(id) {
+  const s = SUBMISSIONS.find(x => x.id === id);
+  if (!s) return;
+  activeDrawerId = id;
+
+  const prog     = PROGRESS[id] || {};
+  const rawStage = prog.onboarding_stage || '';
+  const curStage = normalizeStage(rawStage);
+  const curIdx   = stageIndex(curStage);
+  const isComplete = curStage === 'Complete';
+
+  const initials = ((s.firstName || '?')[0] + (s.lastName || '?')[0]).toUpperCase();
+  document.getElementById('drawer-avatar').textContent = initials;
+  document.getElementById('drawer-name').textContent   = (s.firstName || '') + ' ' + (s.lastName || '');
+  document.getElementById('drawer-meta').textContent   = (s.department || '—') + ' · ' + (s.position || 'New Hire');
+
+  /* ── Tracker line ── */
+  const pct = computeProgress(rawStage, prog.task_type || '');
+  const trackerHtml = STAGES.map((sg, idx) => {
+    const isThisComplete = sg === 'Complete';
+    let dotCls, lblCls;
+
+    if (isComplete || pct === 100) {
+      dotCls = isThisComplete ? 'complete-done' : 'done';
+      lblCls = 'done';
+    } else if (idx < curIdx) {
+      dotCls = 'done';   lblCls = 'done';
+    } else if (idx === curIdx) {
+      dotCls = isThisComplete ? 'complete-done' : 'active';
+      lblCls = isThisComplete ? 'done' : 'active';
+    } else {
+      dotCls = isThisComplete ? 'complete-todo' : 'todo';
+      lblCls = '';
+    }
+
+    const isDoneConn = (isComplete || pct === 100) ? true : (idx < curIdx);
+    const conn = idx < STAGES.length - 1
+      ? `<div class="tracker-conn ${isDoneConn ? 'done' : 'todo'}"></div>` : '';
+    const dotContent = (dotCls === 'done' || dotCls === 'complete-done') ? '✓' : '';
+
+    // Show sub-task hint for the active stage
+    let subLabel = sg;
+    if (idx === curIdx && !isComplete) {
+      const taskDisplay = {
+        'DOCS_UPLOAD_REQUEST':      'Awaiting Upload',
+        'EMPLOYEE_DOC_UPLOAD':      'Employee Uploading',
+        'HR_DOCS_VERIFY':           'Pending HR Review',
+        'EMPLOYEE_IT_PROVISIONING': 'Awaiting IT Setup',
+        'EMPLOYEE_POLICY_SIGN':     'Awaiting Signature',
+        'MANAGER_INTRO_CONFIRM':    'Awaiting Confirmation',
+      };
+      const hint = taskDisplay[(prog.task_type || '').toUpperCase().replace(/-/g,'_')] || '';
+      if (hint) subLabel = `${sg}`;
+    }
+
+    return `
+      <div class="tracker-step">
+        <div class="tracker-dot ${dotCls}">${dotContent}</div>
+        <div class="tracker-step-label ${lblCls}">${subLabel}</div>
+      </div>${conn}`;
+  }).join('');
+
+  document.getElementById('tracker-line').innerHTML = trackerHtml;
+
+  /* ── Determine verify button state ──
+     4 states based on onboarding_stage + task_type:
+     1. ENABLED  (green):  stage==DOCS_UPLOAD && task_type==HR_DOCS_VERIFY
+     2. DISABLED (grey, "Documents Not Uploaded Yet"):
+                           stage==DOCS_UPLOAD && task_type IN [EMPLOYEE_DOCS_UPLOAD, DOCS_UPLOAD_REQUEST, null/other]
+     3. VERIFIED (green outline, disabled): stage is past DOCS_UPLOAD (IT_SETUP / INDUCTION / COMPLETE), or _forceVerified
+     4. DISABLED (grey, "Verify Documents"): any other state (NOT_STARTED, OFFER, etc.)
+  */
+  const apiStageRaw = (prog.onboarding_stage || '').toUpperCase().trim();
+  const taskTypeRaw = (prog.task_type || '').toUpperCase().trim();
+  const isDocsStage  = apiStageRaw === 'DOCS_UPLOAD';
+  const isPastDocs   = (curIdx >= 2 || isComplete) || !!prog._forceVerified; // idx 1 = Policy Signoff (past Docs)
+  const isHrVerify   = taskTypeRaw === 'HR_DOCS_VERIFY';
+  const isEmployeeUploadPending = isDocsStage && !isHrVerify; // waiting for employee to upload
+
+  let verifyBtnCls, verifyBtnLabel;
+  if (isPastDocs) {
+    // Stage moved past docs — already verified
+    verifyBtnCls   = 'already-verified';
+    verifyBtnLabel = '✓ &nbsp;Verified';
+  } else if (isDocsStage && isHrVerify) {
+    // HR's turn to verify — enable the button
+    verifyBtnCls   = 'can-verify';
+    verifyBtnLabel = '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verify Documents';
+  } else if (isEmployeeUploadPending) {
+    // Employee hasn't uploaded yet
+    verifyBtnCls   = 'disabled-verify';
+    verifyBtnLabel = '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Documents Not Uploaded Yet';
+  } else {
+    // Any other state — generic disabled
+    verifyBtnCls   = 'disabled-verify';
+    verifyBtnLabel = '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verify Documents';
+  }
+
+  /* ── Documents section ── */
+  const DOCS = [
+    { name: 'NDA',                     icon: '📄' },
+    { name: 'Offer Letter',            icon: '📋' },
+    { name: 'ID Proof',                icon: '🪪' },
+    { name: 'Educational Certificate', icon: '🎓' },
+    { name: 'Bank Details Form',       icon: '🏦' },
+  ];
+
+  // Docs are "uploaded" only when HR is ready to verify or already past that stage
+  const docsUploaded = isPastDocs || (isDocsStage && isHrVerify);
+
+  const docsHtml = `
+    <table class="docs-table">
+      <thead>
+        <tr>
+          <th>Document</th>
+          <th style="text-align:center">Uploaded</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${DOCS.map(d => `
+          <tr>
+            <td><div class="doc-name"><span class="doc-name-icon">${d.icon}</span>${d.name}</div></td>
+            <td style="text-align:center">
+              ${docsUploaded
+                ? '<span class="doc-tick">✓</span>'
+                : '<span class="doc-cross">✕</span>'}
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <button class="verify-docs-btn ${verifyBtnCls}"
+      onclick="${verifyBtnCls === 'can-verify' ? `verifyDocuments('${id}')` : ''}">
+      ${verifyBtnLabel}
+    </button>
+  `;
+  document.getElementById('drawer-docs-section').innerHTML = docsHtml;
+
+  /* ── Employee info from progress body ── */
+  // Merge employee submission data with any extra fields from progress API
+  const email    = prog.email       || s.email       || '—';
+  const phone    = prog.phone       || s.phone       || '—';
+  const dept     = prog.department  || s.department  || '—';
+  const role     = prog.role        || s.position    || '—';
+  const empType  = prog.employment_type || s.employmentType || '—';
+  const joinDate = prog.joining_date    || s.startDate      || null;
+  const location = prog.work_location   || s.officeLocation || '—';
+  const manager  = prog.manager_id      || s.reportingManager || '—';
+  const ec       = prog.emergency_contact_name
+                    ? prog.emergency_contact_name + ' — ' + (prog.emergency_contact_phone || '')
+                    : (s.emergencyContact || '—');
+
+  document.getElementById('drawer-info').innerHTML = `
+    <div class="di-section">
+      <div class="di-section-label">Personal Information</div>
+      <div class="di-grid">
+        <div><div class="di-field-label">Email</div><div class="di-field-val email">${email}</div></div>
+        <div><div class="di-field-label">Phone</div><div class="di-field-val">${phone}</div></div>
+        <div><div class="di-field-label">Emergency Contact</div><div class="di-field-val">${ec}</div></div>
+      </div>
+    </div>
+    <div class="di-section">
+      <div class="di-section-label">Role &amp; Employment</div>
+      <div class="di-grid">
+        <div><div class="di-field-label">Department</div><div class="di-field-val">${dept}</div></div>
+        <div><div class="di-field-label">Position</div><div class="di-field-val">${role}</div></div>
+        <div><div class="di-field-label">Employment Type</div><div class="di-field-val">${empType}</div></div>
+        <div><div class="di-field-label">Start Date</div><div class="di-field-val">${fmtDate(joinDate)}</div></div>
+        <div><div class="di-field-label">Work Location</div><div class="di-field-val">${location}</div></div>
+        <div><div class="di-field-label">Reporting Manager</div><div class="di-field-val">${manager}</div></div>
+      </div>
+    </div>
+    ${prog.onboarding_stage ? `
+    <div class="di-section">
+      <div class="di-section-label">Onboarding Info</div>
+      <div class="di-grid">
+        <div><div class="di-field-label">Current Stage</div><div class="di-field-val">${prog.onboarding_stage}</div></div>
+        <div><div class="di-field-label">Task Type</div><div class="di-field-val">${prog.task_type || '—'}</div></div>
+      </div>
+    </div>` : ''}
+  `;
+
+  const bd = document.getElementById('detail-drawer-backdrop');
+  bd.style.display = 'flex';
+}
+
+async function verifyDocuments(empId) {
+  const s = SUBMISSIONS.find(x => x.id === empId);
+  const name = s ? `${s.firstName || ''} ${s.lastName || ''}` : 'Employee';
+
+  // Disable the button immediately to prevent double-clicks
+  const btn = document.querySelector('.verify-docs-btn.can-verify');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+  }
+
+  try {
+    const res = await fetch(`${CONFIG.ONBOARDING_API_BASE}/resume-onboarding`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        employee_id: empId,
+        token_type:  'HR_DOCS_VERIFY',
+        status:      'SUCCESS',
+        output: {
+          // Minimal audit fields — logged by backend for traceability
+          verified_by: HR_DOCS_VERIFIED_BY,
+          verified_at: new Date().toISOString(),
+        },
+      }),
+    });
+
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+    // Optimistically flip the UI to "Verified" state
+    if (PROGRESS[empId]) PROGRESS[empId]._forceVerified = true;
+
+    showToast('✓', `Documents verified for ${name}`);
+    closeDrawerDirect();
+    setTimeout(() => renderTracking(), 300);
+
+  } catch (err) {
+    console.error('Verify failed:', err);
+    showToast('✕', `Verification failed — ${err.message}`);
+    // Re-enable button on failure
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verify Documents';
+    }
+  }
+}
+
+function closeDrawer(e) {
+  if (e.target === document.getElementById('detail-drawer-backdrop')) closeDrawerDirect();
+}
+function closeDrawerDirect() {
+  const bd = document.getElementById('detail-drawer-backdrop');
+  bd.style.display = 'none';
+  activeDrawerId = null;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDrawerDirect();
+    closeOverlayDirect();
+  }
+});
 
 /* ═══════════════════════════════════════════
    HELPERS
@@ -1228,323 +1768,13 @@ function showToast(icon, msg) {
 }
 
 /* ═══════════════════════════════════════════
-   INIT — load real data on page load
+   INIT
 ═══════════════════════════════════════════ */
-
-const ONBOARDING_TASKS = [
-  { id: 't1', label: 'Send offer letter',          stage: 'Offer',     dueDays: 1  },
-  { id: 't2', label: 'ID & document verification', stage: 'Docs',      dueDays: 2  },
-  { id: 't3', label: 'IT equipment provisioned',   stage: 'IT Setup',  dueDays: 3  },
-  { id: 't4', label: 'System accounts created',    stage: 'IT Setup',  dueDays: 3  },
-  { id: 't5', label: 'Workspace assigned',         stage: 'Workspace', dueDays: 5  },
-  { id: 't6', label: 'Induction session booked',   stage: 'Induction', dueDays: 5  },
-  { id: 't7', label: 'HR policy docs shared',      stage: 'Induction', dueDays: 7  },
-  { id: 't8', label: 'Buddy / mentor assigned',    stage: 'Complete',  dueDays: 7  },
-];
-
-// Quick action definitions for the drawer
-const QUICK_ACTIONS = [
-  { id: 'qa1', label: 'Verify Docs',      icon: '📄', cls: 'ab-green',  taskId: 't2' },
-  { id: 'qa2', label: 'Send Offer Letter',icon: '✉️',  cls: 'ab-ink',   taskId: 't1' },
-  { id: 'qa3', label: 'Provision IT',     icon: '💻', cls: 'ab-amber',  taskId: 't3' },
-  { id: 'qa4', label: 'Create Accounts',  icon: '🔑', cls: 'ab-amber',  taskId: 't4' },
-  { id: 'qa5', label: 'Assign Workspace', icon: '🏢', cls: 'ab-ink',    taskId: 't5' },
-  { id: 'qa6', label: 'Book Induction',   icon: '📅', cls: 'ab-green',  taskId: 't6' },
-  { id: 'qa7', label: 'Share HR Docs',    icon: '📋', cls: 'ab-ink',    taskId: 't7' },
-  { id: 'qa8', label: 'Assign Mentor',    icon: '👤', cls: 'ab-green',  taskId: 't8' },
-];
-
-// Stage order for the tracker pipeline
-const STAGES = ['Offer', 'Docs', 'IT Setup', 'Workspace', 'Induction', 'Complete'];
-
-// Per-employee task state stored in memory (keyed by employee id)
-const TASK_STATE = {};
-
-function getTaskState(empId) {
-  if (!TASK_STATE[empId]) {
-    TASK_STATE[empId] = {};
-    const seed = empId.charCodeAt(0) + empId.charCodeAt(empId.length - 1);
-    ONBOARDING_TASKS.forEach((t, i) => {
-      TASK_STATE[empId][t.id] = (seed + i) % 3 !== 0;
-    });
-  }
-  return TASK_STATE[empId];
-}
-
-function toggleTask(empId, taskId) {
-  const state = getTaskState(empId);
-  state[taskId] = !state[taskId];
-  renderTracking();
-  if (activeDrawerId === empId) openDrawer(empId);
-}
-
-/* ═══════════════════════════════════════════
-   TRACKING — STATS & RENDER
-═══════════════════════════════════════════ */
-function updateTrackingStats(approved) {
-  const total = approved.length;
-  let complete = 0, inprog = 0, notstarted = 0;
-  approved.forEach(s => {
-    const state = getTaskState(s.id);
-    const done  = ONBOARDING_TASKS.filter(t => state[t.id]).length;
-    if (done === ONBOARDING_TASKS.length) complete++;
-    else if (done === 0) notstarted++;
-    else inprog++;
-  });
-  document.getElementById('track-stat-total').textContent      = total;
-  document.getElementById('track-stat-complete').textContent   = complete;
-  document.getElementById('track-stat-inprog').textContent     = inprog;
-  document.getElementById('track-stat-notstarted').textContent = notstarted;
-  document.getElementById('tab-count-tracking').textContent    = total;
-}
-
-function getCurrentStage(empId) {
-  const state = getTaskState(empId);
-  // Find the last completed stage
-  let lastDoneStage = null;
-  ONBOARDING_TASKS.forEach(t => {
-    if (state[t.id]) lastDoneStage = t.stage;
-  });
-  return lastDoneStage || 'Not Started';
-}
-
-function renderTracking() {
-  const approved = SUBMISSIONS.filter(s => s.status === 'approved');
-
-  // Populate dept filter once
-  const deptSel = document.getElementById('track-dept-filter');
-  if (deptSel.options.length === 1) {
-    const depts = [...new Set(approved.map(s => s.department).filter(Boolean))].sort();
-    depts.forEach(d => {
-      const o = document.createElement('option'); o.value = d; o.textContent = d;
-      deptSel.appendChild(o);
-    });
-  }
-
-  updateTrackingStats(approved);
-
-  const q        = (document.getElementById('track-search').value || '').toLowerCase();
-  const dept     = document.getElementById('track-dept-filter').value;
-  const progress = document.getElementById('track-progress-filter').value;
-
-  const filtered = approved.filter(s => {
-    const name   = ((s.firstName || '') + ' ' + (s.lastName || '')).toLowerCase();
-    const matchQ = !q || name.includes(q) || (s.email || '').toLowerCase().includes(q);
-    const matchD = !dept || s.department === dept;
-    if (!matchQ || !matchD) return false;
-    if (progress) {
-      const state = getTaskState(s.id);
-      const done  = ONBOARDING_TASKS.filter(t => state[t.id]).length;
-      if (progress === 'complete'    && done !== ONBOARDING_TASKS.length) return false;
-      if (progress === 'not_started' && done !== 0)                       return false;
-      if (progress === 'in_progress' && (done === 0 || done === ONBOARDING_TASKS.length)) return false;
-    }
-    return true;
-  });
-
-  const tbody = document.getElementById('track-table-body');
-  const empty  = document.getElementById('track-empty');
-  const none   = document.getElementById('track-none');
-
-  if (approved.length === 0) {
-    tbody.innerHTML = ''; none.style.display = 'block'; empty.style.display = 'none'; return;
-  }
-  none.style.display = 'none';
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = ''; empty.style.display = 'block'; return;
-  }
-  empty.style.display = 'none';
-
-  tbody.innerHTML = filtered.map((s, i) => {
-    const state    = getTaskState(s.id);
-    const done     = ONBOARDING_TASKS.filter(t => state[t.id]).length;
-    const total    = ONBOARDING_TASKS.length;
-    const pct      = Math.round((done / total) * 100);
-    const initials = ((s.firstName || '?')[0] + (s.lastName || '?')[0]).toUpperCase();
-
-    // Stage pipeline (compact, 4 stages shown)
-    const stagesDone = STAGES.filter(sg =>
-      ONBOARDING_TASKS.filter(t => t.stage === sg).every(t => state[t.id])
-    );
-    const currentStageIdx = stagesDone.length < STAGES.length ? stagesDone.length : STAGES.length - 1;
-    const stageLabel = pct === 100 ? 'Complete' : (STAGES[currentStageIdx] || 'Offer');
-
-    // 4-dot mini pipeline for table
-    const miniStages = ['Offer', 'Docs', 'IT Setup', 'Induction'];
-    const pipeHtml = miniStages.map((sg, idx) => {
-      const sgDone = ONBOARDING_TASKS.filter(t => t.stage === sg).every(t => state[t.id]);
-      const cls = sgDone ? 'done' : (idx === currentStageIdx ? 'active' : 'todo');
-      const conn = idx < miniStages.length - 1
-        ? `<div class="stage-connector ${sgDone ? 'done' : 'todo'}"></div>` : '';
-      return `
-        <div class="stage-node">
-          <div class="stage-dot ${cls}">${sgDone ? '✓' : (idx + 1)}</div>
-          <div class="stage-label">${sg}</div>
-        </div>${conn}`;
-    }).join('');
-
-    const barColor = pct === 100 ? 'var(--accent)' : pct === 0 ? 'var(--red)' : 'var(--amber)';
-    const statusLabel = pct === 100 ? 'Complete' : pct === 0 ? 'Not Started' : 'In Progress';
-    const statusCls   = pct === 100 ? 'approved' : pct === 0 ? 'rejected' : 'pending';
-
-    return `
-      <tr onclick="openDrawer('${s.id}')">
-        <td style="color:var(--muted);font-size:12px;width:36px">${String(i+1).padStart(2,'0')}</td>
-        <td>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:32px;height:32px;border-radius:8px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
-            <div>
-              <div style="font-weight:600;font-size:13px">${s.firstName || ''} ${s.lastName || ''}</div>
-              <div style="font-size:11px;color:var(--muted)">${s.email}</div>
-            </div>
-          </div>
-        </td>
-        <td style="font-size:13px;color:var(--ink2)">${s.department || '—'}</td>
-        <td>
-          <div class="stage-pipeline">${pipeHtml}</div>
-        </td>
-        <td>
-          <div class="tprog-wrap">
-            <div class="tprog-bar"><div class="tprog-fill" style="width:${pct}%;background:${barColor}"></div></div>
-            <span class="tprog-pct" style="color:${barColor}">${pct}%</span>
-          </div>
-        </td>
-        <td><span class="status-pill ${statusCls}" style="font-size:11px;padding:3px 9px">${statusLabel}</span></td>
-        <td onclick="event.stopPropagation()">
-          <button style="padding:6px 14px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='var(--accent-lt)';this.style.color='var(--accent)'" onmouseout="this.style.background='var(--surface2)';this.style.color='var(--ink2)'" onclick="openDrawer('${s.id}')">
-            View →
-          </button>
-        </td>
-      </tr>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════
-   DETAIL DRAWER
-═══════════════════════════════════════════ */
-let activeDrawerId = null;
-
-function openDrawer(id) {
-  const s = SUBMISSIONS.find(x => x.id === id);
-  if (!s) return;
-  activeDrawerId = id;
-
-  const initials = ((s.firstName || '?')[0] + (s.lastName || '?')[0]).toUpperCase();
-  document.getElementById('drawer-avatar').textContent = initials;
-  document.getElementById('drawer-name').textContent   = (s.firstName || '') + ' ' + (s.lastName || '');
-  document.getElementById('drawer-meta').textContent   = (s.department || '—') + ' · ' + (s.position || 'New Hire');
-
-  // Build tracker line (shipping style)
-  const state = getTaskState(id);
-  const stagesDone = STAGES.filter(sg =>
-    ONBOARDING_TASKS.filter(t => t.stage === sg).every(t => state[t.id])
-  );
-  const currentIdx = stagesDone.length < STAGES.length ? stagesDone.length : STAGES.length;
-
-  const trackerHtml = STAGES.map((sg, idx) => {
-    const isDone   = idx < currentIdx;
-    const isActive = idx === currentIdx && currentIdx < STAGES.length;
-    const dotCls   = isDone ? 'done' : isActive ? 'active' : 'todo';
-    const lblCls   = isDone ? 'done' : isActive ? 'active' : '';
-    const conn     = idx < STAGES.length - 1
-      ? `<div class="tracker-conn ${isDone ? 'done' : 'todo'}"></div>` : '';
-    return `
-      <div class="tracker-step">
-        <div class="tracker-dot ${dotCls}">${isDone ? '✓' : ''}</div>
-        <div class="tracker-step-label ${lblCls}">${sg}</div>
-      </div>${conn}`;
-  }).join('');
-  document.getElementById('tracker-line').innerHTML = trackerHtml;
-
-  // Build documents section
-  const DOCS = [
-    { name: 'NDA',                    icon: '📄', url: '#' },
-    { name: 'Offer Letter',           icon: '📋', url: '#' },
-    { name: 'ID Proof',               icon: '🪪', url: '#' },
-    { name: 'Educational Certificate',icon: '🎓', url: '#' },
-    { name: 'Bank Details Form',      icon: '🏦', url: '#' },
-  ];
-
-  const docsHtml = `
-    <table class="docs-table">
-      <thead>
-        <tr>
-          <th>Document</th>
-          <th>Link</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${DOCS.map(d => `
-          <tr>
-            <td><div class="doc-name"><span class="doc-name-icon">${d.icon}</span>${d.name}</div></td>
-            <td><a class="doc-link" href="${d.url}" target="_blank">View ↗</a></td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <button class="verify-docs-btn" onclick="verifyDocuments('${id}')">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      Verify Documents
-    </button>
-  `;
-  document.getElementById('drawer-docs-section').innerHTML = docsHtml;
-
-  // Build info section
-  document.getElementById('drawer-info').innerHTML = `
-    <div class="di-section">
-      <div class="di-section-label">Personal Information</div>
-      <div class="di-grid">
-        <div><div class="di-field-label">Email</div><div class="di-field-val email">${s.email || '—'}</div></div>
-        <div><div class="di-field-label">Phone</div><div class="di-field-val">${s.phone || '—'}</div></div>
-        <div><div class="di-field-label">Emergency Contact</div><div class="di-field-val">${s.emergencyContact || '—'}</div></div>
-      </div>
-    </div>
-    <div class="di-section">
-      <div class="di-section-label">Role & Employment</div>
-      <div class="di-grid">
-        <div><div class="di-field-label">Position</div><div class="di-field-val">${s.position || '—'}</div></div>
-        <div><div class="di-field-label">Employment Type</div><div class="di-field-val">${s.employmentType || '—'}</div></div>
-        <div><div class="di-field-label">Start Date</div><div class="di-field-val">${fmtDate(s.startDate)}</div></div>
-        <div><div class="di-field-label">Work Location</div><div class="di-field-val">${s.officeLocation || '—'}</div></div>
-        <div><div class="di-field-label">Reporting Manager</div><div class="di-field-val">${s.reportingManager || '—'}</div></div>
-      </div>
-    </div>
-  `;
-
-  const bd = document.getElementById('detail-drawer-backdrop');
-  bd.style.display = 'flex';
-  requestAnimationFrame(() => bd.style.animation = '');
-}
-
-function verifyDocuments(empId) {
-  const s = SUBMISSIONS.find(x => x.id === empId);
-  const name = s ? `${s.firstName || ''} ${s.lastName || ''}` : 'Employee';
-  showToast('✓', `Documents verified for ${name}`);
-}
-
-function doTaskAction(empId, taskId) {
-  const state = getTaskState(empId);
-  state[taskId] = true;
-  const task = ONBOARDING_TASKS.find(t => t.id === taskId);
-  showToast('✓', task ? task.label + ' — done' : 'Task completed');
-  renderTracking();
-  openDrawer(empId); // re-render drawer
-}
-
-function closeDrawer(e) {
-  if (e.target === document.getElementById('detail-drawer-backdrop')) closeDrawerDirect();
-}
-function closeDrawerDirect() {
-  const bd = document.getElementById('detail-drawer-backdrop');
-  bd.style.display = 'none';
-  activeDrawerId = null;
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeDrawerDirect();
-    closeOverlayDirect();
-  }
-});
+document.getElementById('topbar-brand').textContent = APP_BRAND_NAME;
+document.getElementById('topbar-badge').textContent = HR_BADGE_LABEL;
+document.getElementById('hr-chip-name').textContent = HR_DISPLAY_NAME;
+document.getElementById('hr-chip-role').textContent = HR_DISPLAY_ROLE;
+document.getElementById('hr-avatar').textContent = (HR_DISPLAY_NAME || 'R').trim().charAt(0).toUpperCase();
 
 loadSubmissions();
 </script>
