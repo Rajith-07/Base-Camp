@@ -98,7 +98,7 @@ The frontend HR dashboard communicates with the backend via API Gateway, which t
 <a name="project-structure"></a>
 ## Project Structure
 
-<img width="612" height="410" alt="image" src="https://github.com/user-attachments/assets/ce7dbda7-5d53-440b-b705-2d1ba3f095b4" />
+<p align="center"><img width="612" height="410" alt="image" src="https://github.com/user-attachments/assets/ce7dbda7-5d53-440b-b705-2d1ba3f095b4" /></p>
 
 ---
 
