@@ -16,7 +16,7 @@
 - [Features](#features)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Frontend (HR Dashboard)](#frontend-hr-dashboard)
+- [User Interface](#ui)
 - [Backend (Lambda & Step Functions)](#backend)
 - [Environment Variables](#environment-variables)
 - [License](#license)
@@ -84,10 +84,11 @@ The frontend HR dashboard communicates with the backend via API Gateway, which t
 <a name="features"></a>
 ## Features
 
-- **Automated Onboarding Workflows** — Step Functions orchestrate multi-stage onboarding (account creation → document collection → access provisioning → completion)
+- **Automated Onboarding Workflows** — Step Functions orchestrate multi-stage onboarding (account creation → document collection → access provisioning → policy signoff → Manager introduction meet → completion)
 - **Identity Provisioning** — Automatically create and manage employee identities in Amazon Cognito
 - **Document Collection** — Collect and store onboarding documents securely in S3
 - **HR Dashboard** — Web interface for HR teams to initiate and monitor onboarding in real-time
+- **Employee Onboaridng Portal** - Web interface where employees submit personal details/preferences
 - **Real-time Status Tracking** — Live updates on each employee's onboarding stage
 - **Serverless & Scalable** — No infrastructure to manage; scales automatically with demand
 - **Secure by Default** — Environment variables for secrets, IAM roles for least-privilege access
@@ -97,21 +98,7 @@ The frontend HR dashboard communicates with the backend via API Gateway, which t
 <a name="project-structure"></a>
 ## Project Structure
 
-```
-Base-Camp/
-├── backend/               # AWS Lambda functions & Step Functions definitions
-│   ├── lambdas/           # Individual Lambda function handlers
-│   └── stepfunctions/     # Step Functions state machine definitions (ASL)
-│
-├── frontend/              # HR Dashboard web interface
-│   ├── index.html         # Main dashboard entry point
-│   ├── *.html             # Additional pages (employee details, status, etc.)
-│   └── *.js               # Frontend JavaScript logic & API calls
-│
-├── .gitignore             # Ignores .env files
-├── LICENSE                # MIT License
-└── README.md              # This file
-```
+<img width="612" height="410" alt="image" src="https://github.com/user-attachments/assets/ce7dbda7-5d53-440b-b705-2d1ba3f095b4" />
 
 ---
 
@@ -123,7 +110,7 @@ Base-Camp/
 - AWS Account with appropriate permissions
 - [AWS CLI](https://aws.amazon.com/cli/) configured
 - Node.js (for Lambda functions)
-- A modern web browser (for the HR dashboard)
+- A modern web browser (for dashboards)
 
 ### 1. Clone the Repository
 
@@ -156,39 +143,40 @@ cp .env.example .env
 
 ### 4. Deploy Step Functions
 
-Deploy the state machine from the `backend/stepfunctions/` directory via the AWS Console or AWS CLI:
+Deploy the state machine from the `backend/state-machine/` directory via the AWS Console or AWS CLI:
 
 ```bash
 aws stepfunctions create-state-machine \
   --name "EmployeeOnboardingWorkflow" \
-  --definition file://backend/stepfunctions/onboarding.asl.json \
+  --definition file://backend/state-machine/hrms-onboarding-workflow.json \
   --role-arn <YOUR_STEP_FUNCTIONS_ROLE_ARN>
 ```
 
 ### 5. Launch the Frontend
 
-Open the HR dashboard in your browser:
+Open the Employee Onboardong forms in your browser:
 
 ```bash
-cd frontend
-open index.html
-# Or serve it via a static hosting service like S3 + CloudFront
+cd frontend/dashboards
+open onboarding-portal.html
+# Or serve it via a static hosting service (S3 + CloudFront)
 ```
 
 ---
 
-<a name="frontend-hr-dashboard"></a>
-## Frontend (HR Dashboard)
+<a name="ui"></a>
+## User Intrerface
+### Employee Onboarding Forms
+Employees submit their personal details which generates an UUID as reference with an automated mail receipt using amazon SES.
 
-The frontend is a lightweight HTML/JavaScript web application serving as the HR team's control panel.
+<img width="49%" height="1017" alt="image" src="https://github.com/user-attachments/assets/b11cec88-c158-4cb0-9001-384c53c1f195" />
+<img width="49%" height="1002" alt="image" src="https://github.com/user-attachments/assets/49e30ee9-1274-4172-98d9-cf99a6002ba2" />
 
-**Key screens:**
-- **Dashboard** — Overview of all active onboarding cases and their stages
-- **New Employee** — Form to initiate the onboarding workflow for a new hire
-- **Employee Status** — Real-time view of an individual's onboarding progress
-- **Document Management** — Upload and track required onboarding documents
+<p align="center">
+<img width="49%" alt="image" src="https://github.com/user-attachments/assets/790e5e7f-29bb-4e0e-927b-51aac1727221" />
+</p>
 
-The dashboard communicates with the backend via Amazon API Gateway REST APIs.
+
 
 ---
 
