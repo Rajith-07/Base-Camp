@@ -77,6 +77,7 @@ The frontend HR dashboard communicates with the backend via API Gateway, which t
 | **Amazon Cognito** | Employee identity provisioning and authentication |
 | **Amazon API Gateway** | RESTful API layer for frontend–backend communication |
 | **Amazon S3** | Secure document storage |
+| **Amazon CloudFront** | High Speed CDN |
 | **AWS IAM** | Role-based access control |
 
 ---
@@ -128,18 +129,13 @@ Set up the required AWS services in your account:
 aws configure
 
 # Deploy Lambda functions
-cd backend
+cd backend/lambdas
 # Deploy each Lambda function via AWS Console or AWS CLI
 ```
 
 ### 3. Set Environment Variables
 
-Create a `.env` file in the backend directory (see [Environment Variables](#-environment-variables)):
-
-```bash
-cp .env.example .env
-# Edit .env with your AWS resource ARNs and IDs
-```
+Define process.env.<XXX> variables within the Configuration > Environment variables section of the AWS Lambda console
 
 ### 4. Deploy Step Functions
 
@@ -154,19 +150,25 @@ aws stepfunctions create-state-machine \
 
 ### 5. Launch the Frontend
 
-Open the Employee Onboardong forms in your browser:
+Open the Employee Onboarding forms in your browser:
 
 ```bash
 cd frontend/dashboards
-open onboarding-portal.html
+open employee-onboarding-form.html
 # Or serve it via a static hosting service (S3 + CloudFront)
 ```
 
+To Open HR dashboard:
+```bash
+cd frontend/dashboards
+open hr-dashboard.html
+# Or serve it via a static hosting service (S3 + CloudFront)
+```
 ---
 
 <a name="ui"></a>
-## User Intrerface
-### Employee Onboarding Forms
+## User Interface
+### Employee Onboarding Form
 Employees submit their personal details which generates an UUID as reference with an automated mail receipt using amazon SES.
 
 <img width="49%" height="1017" alt="image" src="https://github.com/user-attachments/assets/b11cec88-c158-4cb0-9001-384c53c1f195" />
@@ -175,6 +177,13 @@ Employees submit their personal details which generates an UUID as reference wit
 <p align="center">
 <img width="49%" alt="image" src="https://github.com/user-attachments/assets/790e5e7f-29bb-4e0e-927b-51aac1727221" />
 </p>
+
+### HR Dashboard
+<img width="49%" height="1006" alt="image" src="https://github.com/user-attachments/assets/870de8c0-72f6-4556-95fb-75f227d3dacf" />
+<img width="49%" height="1015" alt="image" src="https://github.com/user-attachments/assets/f3c84eda-15ce-4e4e-9400-793e0985a722" />
+
+<img width="49%" height="1018" alt="image" src="https://github.com/user-attachments/assets/88271e47-6ea5-4d46-bf5f-2878aa09ad7c" />
+<img width="49%" height="1021" alt="image" src="https://github.com/user-attachments/assets/ab10a271-345d-4ab0-9e57-a44f55029397" />
 
 
 
