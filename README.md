@@ -185,7 +185,20 @@ Employees submit their personal details which generates an UUID as reference wit
 <img width="49%" height="1018" alt="image" src="https://github.com/user-attachments/assets/88271e47-6ea5-4d46-bf5f-2878aa09ad7c" />
 <img width="49%" height="1021" alt="image" src="https://github.com/user-attachments/assets/ab10a271-345d-4ab0-9e57-a44f55029397" />
 
+### Onboarding Portal
+<img width="49%" height="1015" alt="image" src="https://github.com/user-attachments/assets/90e51f53-408e-44dd-9040-dd67e4ff4c99" />
+<img width="49%" height="1025" alt="image" src="https://github.com/user-attachments/assets/23d341af-e4b2-4b54-abf9-cdf83d551e1d" />
 
+<img width="49%" height="1026" alt="image" src="https://github.com/user-attachments/assets/80baa53e-1bb0-4bec-9771-ebbd760a3176" />
+
+<img width="49%" height="1020" alt="image" src="https://github.com/user-attachments/assets/078e079c-0a62-41db-88e0-0c84285a9fb7" />
+<img width="49%" height="1029" alt="image" src="https://github.com/user-attachments/assets/514a7eb1-4729-4f99-8e46-fb341a3b05d3" />
+
+<img width="49%" height="1003" alt="image" src="https://github.com/user-attachments/assets/0fc74d04-28fa-42ce-8c89-0ffaebe39ccc" />
+
+<img width="49%" height="1022" alt="image" src="https://github.com/user-attachments/assets/9b729297-4e3e-4115-8a35-57dd02419d66" />
+
+<img width="49%" height="1020" alt="image" src="https://github.com/user-attachments/assets/19d655b7-51ef-47b5-a9e4-461810c21e7d" />
 
 ---
 
@@ -199,13 +212,13 @@ The backend consists of AWS Lambda functions triggered by API Gateway and orches
 ```
 1. Initiate Onboarding
         ↓
-2. Create Cognito Identity
+2. Collect & Store Documents (S3)
         ↓
-3. Provision Access & Roles
+3. Provision Employee IT preference
         ↓
-4. Collect Documents (S3)
+4. Confirm Policy Signoffs
         ↓
-5. Store Records (DynamoDB)
+5. Book Manger Intro meet
         ↓
 6. Notify Completion
 ```
@@ -221,27 +234,24 @@ Create a `.env` file in the `backend/` directory with the following variables:
 
 ```env
 # AWS Region
-AWS_REGION=us-east-1
+AWS_REGION=<region>
 
 # DynamoDB
-DYNAMODB_TABLE_NAME=EmployeeOnboarding
+DYNAMODB_TABLE_NAME=<table-name>
 
 # Cognito
-COGNITO_USER_POOL_ID=us-east-1_xxxxxxxx
+COGNITO_USER_POOL_ID=<region>_xxxxxxxx
 COGNITO_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # S3
-S3_BUCKET_NAME=base-camp-documents
+S3_BUCKET_NAME=<s3-bucket-name>
 
 # Step Functions
-STATE_MACHINE_ARN=arn:aws:states:us-east-1:xxxxxxxxxxxx:stateMachine:EmployeeOnboardingWorkflow
+STATE_MACHINE_ARN=arn:aws:states:us-east-1:xxxxxxxxxxxx:stateMachine:<state-machine-name>
 
 # API Gateway
-API_GATEWAY_ENDPOINT=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/prod
+API_GATEWAY_ENDPOINT=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/<deployment-stage>
 ```
-
-> Never commit `.env` files to version control. The `.gitignore` is already configured to exclude them.
-
 ---
 
 <a name="license"></a>
