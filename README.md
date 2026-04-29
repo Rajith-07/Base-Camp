@@ -15,10 +15,12 @@
 - [AWS Services Used](#aws-services-used)
 - [Features](#features)
 - [Project Structure](#project-structure)
+- [API Endpoints]()
 - [Getting Started](#getting-started)
 - [User Interface](#ui)
 - [Backend (Lambda & Step Functions)](#backend)
 - [Environment Variables](#environment-variables)
+- [Contributing]()
 - [License](#license)
 
 ---
@@ -89,7 +91,7 @@ The frontend HR dashboard communicates with the backend via API Gateway, which t
 - **Identity Provisioning** — Automatically create and manage employee identities in Amazon Cognito
 - **Document Collection** — Collect and store onboarding documents securely in S3
 - **HR Dashboard** — Web interface for HR teams to initiate and monitor onboarding in real-time
-- **Employee Onboaridng Portal** - Web interface where employees submit personal details/preferences
+- **Employee Onboarding Portal** - Web interface where employees submit personal details/preferences
 - **Real-time Status Tracking** — Live updates on each employee's onboarding stage
 - **Serverless & Scalable** — No infrastructure to manage; scales automatically with demand
 - **Secure by Default** — Environment variables for secrets, IAM roles for least-privilege access
@@ -110,7 +112,7 @@ The frontend HR dashboard communicates with the backend via API Gateway, which t
 
 - AWS Account with appropriate permissions
 - [AWS CLI](https://aws.amazon.com/cli/) configured
-- Node.js (for Lambda functions)
+- Node.js 14+ or later (for Lambda functions)
 - A modern web browser (for dashboards)
 
 ### 1. Clone the Repository
@@ -135,7 +137,7 @@ cd backend/lambdas
 
 ### 3. Set Environment Variables
 
-Define process.env.<XXX> variables within the Configuration > Environment variables section of the AWS Lambda console
+Set environment variables in the AWS Lambda console under Configuration > Environment variables, or define them in a .env file for local development.
 
 ### 4. Deploy Step Functions
 
@@ -169,7 +171,7 @@ open hr-dashboard.html
 <a name="ui"></a>
 ## User Interface
 ### Employee Onboarding Form
-Employees submit their personal details which generates an UUID as reference with an automated mail receipt using amazon SES.
+Employees submit personal details, which generates a unique reference UUID as reference with an automated email receipt using amazon SES.
 
 <img width="49%" height="1017" alt="image" src="https://github.com/user-attachments/assets/b11cec88-c158-4cb0-9001-384c53c1f195" />
 <img width="49%" height="1002" alt="image" src="https://github.com/user-attachments/assets/49e30ee9-1274-4172-98d9-cf99a6002ba2" />
@@ -178,7 +180,9 @@ Employees submit their personal details which generates an UUID as reference wit
 <img width="49%" alt="image" src="https://github.com/user-attachments/assets/790e5e7f-29bb-4e0e-927b-51aac1727221" />
 </p>
 
+
 ### HR Dashboard
+HR can approve or deny submitted employee applications & track employee's onboarding status in real-time
 <img width="49%" height="1006" alt="image" src="https://github.com/user-attachments/assets/870de8c0-72f6-4556-95fb-75f227d3dacf" />
 <img width="49%" height="1015" alt="image" src="https://github.com/user-attachments/assets/f3c84eda-15ce-4e4e-9400-793e0985a722" />
 
@@ -186,6 +190,7 @@ Employees submit their personal details which generates an UUID as reference wit
 <img width="49%" height="1021" alt="image" src="https://github.com/user-attachments/assets/ab10a271-345d-4ab0-9e57-a44f55029397" />
 
 ### Onboarding Portal
+Employee are redirected to an onboarding portal where they have to upload required document, fill IT preference, Sign company's policies and schedule a introduction meet woth manager.
 <img width="49%" height="1015" alt="image" src="https://github.com/user-attachments/assets/90e51f53-408e-44dd-9040-dd67e4ff4c99" />
 <img width="49%" height="1025" alt="image" src="https://github.com/user-attachments/assets/23d341af-e4b2-4b54-abf9-cdf83d551e1d" />
 
@@ -218,7 +223,7 @@ The backend consists of AWS Lambda functions triggered by API Gateway and orches
         ↓
 4. Confirm Policy Signoffs
         ↓
-5. Book Manger Intro meet
+5. Schedule Manager Introduction Meeting
         ↓
 6. Notify Completion
 ```
